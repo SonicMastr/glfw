@@ -38,6 +38,17 @@ SceTouchData touch;
 
 SceTouchPanelInfo panelinfo;
 
+typedef struct point {
+    int x;
+    int y;
+} point;
+
+static point a = { 0, 0 };
+static point b = { 0, 0  };
+static point c = { 128, 32767 };
+static point d = { 128, 32767 };
+static int analog_map[256];
+
 float aAWidth;
 float aAHeight;
 float dispWidth;
@@ -274,6 +285,24 @@ static _GLFWmapping s_vitaMapping =
     },
 };
 
+static void lerp (point *dest, point *a, point *b, float t)
+{
+    dest->x = a->x + (b->x - a->x)*t;
+    dest->y = a->y + (b->y - a->y)*t;
+}
+
+static int calc_bezier_y(float t)
+{
+    point ab, bc, cd, abbc, bccd, dest;
+    lerp (&ab, &a, &b, t);
+    lerp (&bc, &b, &c, t);
+    lerp (&cd, &c, &d, t);
+    lerp (&abbc, &ab, &bc, t);
+    lerp (&bccd, &bc, &cd, t);
+    lerp (&dest, &abbc, &bccd, t);
+    return dest.y;
+}
+
 static void _initVitaTouch(void)
 {
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
@@ -312,24 +341,30 @@ void _glfwInitVitaJoysticks(void)
 
     js->mapping = &s_vitaMapping;
     js->vita.id = 0;
+    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+    for (int i = 0; i < 128; i++)
+    {
+        float t = (float)i/127.0f;
+        analog_map[i+128] = calc_bezier_y(t);
+        analog_map[127-i] = -1 * analog_map[i+128];
+    }
     _initVitaTouch();
 }
 
 void _glfwUpdateVitaJoysticks(void)
 {
-    static unsigned int old_buttons;
+    static unsigned int old_buttons = 0;
     SceUInt64 down, up;
+    SceCtrlData pad;
+    sceCtrlPeekBufferPositive(0, &pad, 1);
 
-    // Read input state
-    SceCtrlData *pad = NULL;
-    sceCtrlPeekBufferPositive(0, pad, 1);
-
-    down = pad->buttons;
-    up   = old_buttons ^ pad->buttons;
+    down = pad.buttons;
+    up   = old_buttons ^ pad.buttons;
+    old_buttons = pad.buttons;
 
 #define MAP_KEY(_vita_key, _glfw_key, _scancode) \
     do { \
-        if (down & (_vita_key)) _glfwInputKey(_glfw.vita.cur_window, (_glfw_key), (_scancode), GLFW_PRESS, 0); \
+        if (down & (_vita_key)) {_glfwInputKey(_glfw.vita.cur_window, (_glfw_key), (_scancode), GLFW_PRESS, 0);} \
         else if (up & (_vita_key)) { if (down & ~(_vita_key)) _glfwInputKey(_glfw.vita.cur_window, (_glfw_key), (_scancode), GLFW_RELEASE, 0);} \
     } while (0)
 
@@ -373,30 +408,25 @@ int _glfwPlatformPollJoystick(_GLFWjoystick* js, int mode)
     if (js->vita.id != 0)
         return GLFW_FALSE;
 
-    SceCtrlData *pad = NULL;
-    sceCtrlPeekBufferPositive(js->vita.id, pad, 1);
+    SceCtrlData pad;
+    sceCtrlPeekBufferPositive(js->vita.id, &pad, 1);
 
     if (mode & _GLFW_POLL_AXES)
     {
-        unsigned char lx, ly, rx, ry;
-        lx = pad->lx;
-        ly = pad->ly;
-        rx = pad->rx;
-        ry = pad->ry;
-        _glfwInputJoystickAxis(js, _VITA_AXIS_LEFT_X, lx / 32768.0f);
-        _glfwInputJoystickAxis(js, _VITA_AXIS_LEFT_Y, ly / 32768.0f);
-        _glfwInputJoystickAxis(js, _VITA_AXIS_RIGHT_X, rx / 32768.0f);
-        _glfwInputJoystickAxis(js, _VITA_AXIS_RIGHT_Y, ry / 32768.0f);
+        _glfwInputJoystickAxis(js, _VITA_AXIS_LEFT_X, analog_map[pad.lx]/32767.f);
+        _glfwInputJoystickAxis(js, _VITA_AXIS_LEFT_Y, analog_map[pad.ly]/32767.f);
+        _glfwInputJoystickAxis(js, _VITA_AXIS_RIGHT_X, analog_map[pad.rx]/32767.f);
+        _glfwInputJoystickAxis(js, _VITA_AXIS_RIGHT_Y, analog_map[pad.ry]/32767.f);
     }
 
     if (mode & _GLFW_POLL_BUTTONS)
     {
         int i;
         for (i = 0; i < _VITA_BUTTON_COUNT; i++)
-            _glfwInputJoystickButton(js, i, (pad->buttons & button_map[i]) ? GLFW_PRESS : GLFW_RELEASE);
+            _glfwInputJoystickButton(js, i, (pad.buttons & button_map[i]) ? GLFW_PRESS : GLFW_RELEASE);
         // Extract hat values
-        char hatbits = (pad->buttons >> 4) & 0xF;
-        _glfwInputJoystickHat(js, i, hatbits);
+        char hatbits = (pad.buttons >> 4) & 0xF;
+        _glfwInputJoystickHat(js, 0, hatbits);
     }
 
     return GLFW_TRUE;

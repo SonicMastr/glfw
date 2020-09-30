@@ -306,16 +306,6 @@ void _glfwPlatformPollEvents(void)
 {
     if (!_glfw.vita.cur_window)
         return;
-
-    int events;
-    do
-    {
-        events = _glfw.vita.event_mask;
-        _glfw.vita.event_mask = 0;
-        if (events & _GLFW_VITA_EVENT_SCREEN_SIZE_CHANGED)
-            _glfwPlatformSetWindowSize(_glfw.vita.cur_window, _glfw.vita.scr_width, _glfw.vita.scr_height);
-    } while (events);
-
     // Update joysticks
     _glfwUpdateVitaJoysticks();
 }
