@@ -28,7 +28,7 @@
 //========================================================================
 
 #include "internal.h"
-#if !defined(_GLFW_SWITCH)
+#if !defined(_GLFW_SWITCH) || !defined(_GLFW_VITA)
 #include "mappings.h"
 #endif
 
@@ -90,8 +90,9 @@ static void terminate(void)
     free(_glfw.mappings);
     _glfw.mappings = NULL;
     _glfw.mappingCount = 0;
-
+#if !defined(_GLFW_VITA)
     _glfwTerminateVulkan();
+#endif
     _glfwPlatformTerminate();
 
     _glfw.initialized = GLFW_FALSE;
@@ -252,7 +253,7 @@ GLFWAPI int glfwInit(void)
 
     glfwDefaultWindowHints();
 
-#if !defined(_GLFW_SWITCH)
+#if !defined(_GLFW_SWITCH) || !defined(_GLFW_VITA)
     {
         int i;
 

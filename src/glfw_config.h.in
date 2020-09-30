@@ -46,6 +46,8 @@
 #cmakedefine _GLFW_OSMESA
 // Define this to 1 if building GLFW for Switch
 #cmakedefine _GLFW_SWITCH
+// Define this to 1 if building GLFW for PS Vita
+#cmakedefine _GLFW_VITA
 
 // Define this to 1 if building as a shared library / dynamic library / DLL
 #cmakedefine _GLFW_BUILD_DLL

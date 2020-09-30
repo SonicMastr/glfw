@@ -358,17 +358,23 @@ GLFWbool _glfwRefreshContextAttribs(_GLFWwindow* window,
     };
 
     window->context.source = ctxconfig->source;
-    window->context.client = GLFW_OPENGL_API;
+    window->context.client = ctxconfig->client;
 
     previous = _glfwPlatformGetTls(&_glfw.contextSlot);
     glfwMakeContextCurrent((GLFWwindow*) window);
-
+#if !defined(_GLFW_VITA)
     window->context.GetIntegerv = (PFNGLGETINTEGERVPROC)
         window->context.getProcAddress("glGetIntegerv");
     window->context.GetString = (PFNGLGETSTRINGPROC)
         window->context.getProcAddress("glGetString");
+#else
+    #include <GLES2/gl2.h>
+    window->context.GetIntegerv = &glGetIntegerv;
+    window->context.GetString = &glGetString;
+#endif
     if (!window->context.GetIntegerv || !window->context.GetString)
     {
+        printf("Getting Functions isn't working\n");
         _glfwInputError(GLFW_PLATFORM_ERROR, "Entry point retrieval is broken");
         glfwMakeContextCurrent((GLFWwindow*) previous);
         return GLFW_FALSE;
@@ -567,8 +573,10 @@ GLFWbool _glfwRefreshContextAttribs(_GLFWwindow* window,
     // Clearing the front buffer to black to avoid garbage pixels left over from
     // previous uses of our bit of VRAM
     {
+#if !defined(_GLFW_VITA)
         PFNGLCLEARPROC glClear = (PFNGLCLEARPROC)
             window->context.getProcAddress("glClear");
+#endif
         glClear(GL_COLOR_BUFFER_BIT);
         window->context.swapBuffers(window);
     }

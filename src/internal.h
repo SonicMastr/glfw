@@ -192,6 +192,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
  #include "null_platform.h"
 #elif defined(_GLFW_SWITCH)
  #include "switch_platform.h"
+#elif defined(_GLFW_VITA)
+ #include "vita_platform.h"
 #else
  #error "No supported window creation API selected"
 #endif

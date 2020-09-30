@@ -65,6 +65,12 @@ elseif (_GLFW_SWITCH)
                      posix_time.h posix_thread.h egl_context.h)
     set(glfw_SOURCES ${common_SOURCES} switch_init.c switch_monitor.c switch_window.c
                      switch_joystick.c switch_context.c switch_time.c posix_thread.c egl_context.c)
+elseif (_GLFW_VITA)
+    set(glfw_HEADERS ${common_HEADERS} vita_platform.h vita_joystick.h
+                     posix_time.h posix_thread.h egl_context.h)
+    list(REMOVE_ITEM common_SOURCES vulkan.c)
+    set(glfw_SOURCES ${common_SOURCES} vita_init.c vita_monitor.c vita_window.c
+                     vita_joystick.c vita_context.c vita_time.c posix_thread.c egl_context.c)
 endif()
 
 if (_GLFW_X11 OR _GLFW_WAYLAND)
@@ -173,6 +179,10 @@ if (BUILD_SHARED_LIBS)
         # Hide symbols not explicitly tagged for export from the shared library
         target_compile_options(glfw PRIVATE "-fvisibility=hidden")
     endif()
+endif()
+
+if (_GLFW_VITA)
+    target_compile_options(glfw PRIVATE "-fno-pic" "-fno-plt")
 endif()
 
 if (MSVC)

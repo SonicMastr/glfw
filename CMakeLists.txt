@@ -15,9 +15,9 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" ON)
-option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
+option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
+option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 option(GLFW_INSTALL "Generate installation target" ON)
 option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
 option(GLFW_EGL_STATIC "Statically link to EGL" OFF)
@@ -159,6 +159,10 @@ elseif (UNIX)
 elseif (SWITCH_LIBNX)
     set(_GLFW_SWITCH 1)
     message(STATUS "Using Switch for window creation")
+elseif (VITA)
+    set(_GLFW_VITA 1)
+    set(_GLFW_EGL_STATIC 1)
+    message(STATUS "Using Vita for window creation")
 else()
     message(FATAL_ERROR "No supported platform was detected")
 endif()
@@ -188,6 +192,15 @@ if (UNIX AND NOT APPLE)
 endif()
 
 if (SWITCH_LIBNX)
+    find_library(MATH_LIBRARY m)
+    mark_as_advanced(MATH_LIBRARY)
+    if (MATH_LIBRARY)
+        list(APPEND glfw_LIBRARIES "${MATH_LIBRARY}")
+        list(APPEND glfw_PKG_LIBS "-lm")
+    endif()
+endif()
+
+if (VITA)
     find_library(MATH_LIBRARY m)
     mark_as_advanced(MATH_LIBRARY)
     if (MATH_LIBRARY)
@@ -318,9 +331,18 @@ if (_GLFW_SWITCH)
 endif()
 
 #--------------------------------------------------------------------
+# Use Vita for window creation
+#--------------------------------------------------------------------
+if (_GLFW_VITA)
+
+    list(APPEND glfw_PKG_LIBS "-lpib -lpthread -llibScePiglet_stub -lSceLibm -lSceRtcUser_stub -lSceCtrl_stub")
+
+endif()
+
+#--------------------------------------------------------------------
 # Add the Vulkan loader as a dependency if necessary
 #--------------------------------------------------------------------
-if (GLFW_VULKAN_STATIC AND NOT SWITCH_LIBNX)
+if (GLFW_VULKAN_STATIC AND NOT SWITCH_LIBNX AND NOT VITA)
     list(APPEND glfw_PKG_DEPS "vulkan")
 endif()
 

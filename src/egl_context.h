@@ -47,6 +47,10 @@ typedef struct wl_egl_window* EGLNativeWindowType;
  #define EGLAPIENTRY
 typedef void* EGLNativeDisplayType;
 typedef void* EGLNativeWindowType;
+#elif defined(_GLFW_VITA)
+ #define EGLAPIENTRY
+typedef void* EGLNativeDisplayType;
+typedef int EGLNativeWindowType;
 #else
  #error "No supported EGL platform selected"
 #endif
