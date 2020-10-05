@@ -713,7 +713,6 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
     window->context.getProcAddress = getProcAddressEGL;
     window->context.destroy = destroyContextEGL;
 #if defined (_GLFW_VITA)
-    #include <EGL/egl.h>
     eglQuerySurface(_glfw.egl.display, window->context.egl.surface, 0x3057, &window->vita.width);
     eglQuerySurface(_glfw.egl.display, window->context.egl.surface, 0x3056, &window->vita.height);
 #endif

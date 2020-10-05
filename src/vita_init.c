@@ -59,7 +59,7 @@ int _glfwPlatformInit(void)
     _glfwVitaRefreshFocusState();
     _glfwVitaRefreshScreenSize();
 
-    _glfwAllocMonitor("Default", 960, 544);
+    _glfwInputMonitor(_glfwAllocMonitor("Default", 960, 544), GLFW_CONNECTED, _GLFW_INSERT_FIRST);
     _glfwInitVitaJoysticks();
     return GLFW_TRUE;
 }
