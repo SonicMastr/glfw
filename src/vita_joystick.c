@@ -349,6 +349,7 @@ void _glfwInitVitaJoysticks(void)
         analog_map[127-i] = -1 * analog_map[i+128];
     }
     _initVitaTouch();
+    printf("Initialized Joysticks\n");
 }
 
 void _glfwUpdateVitaJoysticks(void)

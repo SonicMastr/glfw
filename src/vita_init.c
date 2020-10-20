@@ -52,10 +52,12 @@ void _glfwPlatformTerminateContextApi(void)
 
 int _glfwPlatformInit(void)
 {
-    PibOptions options;
-    options.shaccCgEnabled = 1;
-    options.noStdLib = 0;
-    pibInit(&options);
+    int ret;
+    if(ret = pibInit(PIB_SHACCCG), ret)
+    {
+        printf("PIB ERROR %d\n", ret);
+        return GLFW_FALSE;
+    }
     _glfwVitaRefreshFocusState();
     _glfwVitaRefreshScreenSize();
 
@@ -71,6 +73,6 @@ void _glfwPlatformTerminate(void)
 
 const char* _glfwPlatformGetVersionString(void)
 {
-    return _GLFW_VERSION_NUMBER " PS Vita Pigs in a Blanket GLES 2.0 Driver by CBPS";
+    return _GLFW_VERSION_NUMBER " PSVita Pigs in a Blanket GLES 2.0 Driver by CBPS";
 }
 

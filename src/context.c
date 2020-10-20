@@ -374,7 +374,6 @@ GLFWbool _glfwRefreshContextAttribs(_GLFWwindow* window,
 #endif
     if (!window->context.GetIntegerv || !window->context.GetString)
     {
-        printf("Getting Functions isn't working\n");
         _glfwInputError(GLFW_PLATFORM_ERROR, "Entry point retrieval is broken");
         glfwMakeContextCurrent((GLFWwindow*) previous);
         return GLFW_FALSE;
