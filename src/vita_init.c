@@ -53,7 +53,7 @@ void _glfwPlatformTerminateContextApi(void)
 int _glfwPlatformInit(void)
 {
     int ret;
-    if(ret = pibInit(PIB_SHACCCG), ret)
+    if(ret = pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE), ret)
     {
         printf("PIB ERROR %d\n", ret);
         return GLFW_FALSE;

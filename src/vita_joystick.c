@@ -56,9 +56,9 @@ float dispHeight;
 float forcerange;
 
 static const unsigned int button_map[] = {
-    SCE_CTRL_CIRCLE, SCE_CTRL_CROSS, SCE_CTRL_TRIANGLE, SCE_CTRL_SQUARE,
+    SCE_CTRL_CROSS, SCE_CTRL_CIRCLE, SCE_CTRL_SQUARE, SCE_CTRL_TRIANGLE, 
     SCE_CTRL_LTRIGGER, SCE_CTRL_RTRIGGER,
-    SCE_CTRL_START, SCE_CTRL_SELECT};
+    SCE_CTRL_SELECT, SCE_CTRL_START};
 
 enum  	HidKeyboardScancode {
   KBD_NONE = 0x00,
@@ -330,8 +330,9 @@ static void _convertTouchXYToGLFWXY(float *glfw_x, float *glfw_y, int vita_x, in
 	} else if (y > 1.0) {
 		y = 1.0;
 	}
-	*glfw_x = x;
-	*glfw_y = y;
+
+	*glfw_x = (float)x * _glfw.vita.cur_window->vita.width;
+	*glfw_y = (float)y * _glfw.vita.cur_window->vita.height;
 }
 
 void _glfwInitVitaJoysticks(void)
@@ -349,7 +350,6 @@ void _glfwInitVitaJoysticks(void)
         analog_map[127-i] = -1 * analog_map[i+128];
     }
     _initVitaTouch();
-    printf("Initialized Joysticks\n");
 }
 
 void _glfwUpdateVitaJoysticks(void)
@@ -387,10 +387,7 @@ void _glfwUpdateVitaJoysticks(void)
     {
         float x, y;
         _convertTouchXYToGLFWXY(&x, &y, touch.report[0].x, touch.report[0].y);
-        float scaledXPos = (float)x / TOUCH_WIDTH * _glfw.vita.cur_window->vita.width;
-        float scaledYPos = (float)y / TOUCH_HEIGHT * _glfw.vita.cur_window->vita.height;
-
-        _glfwInputCursorPos(_glfw.vita.cur_window, scaledXPos, scaledYPos);
+        _glfwInputCursorPos(_glfw.vita.cur_window, x, y);
 
         if (_glfw.vita.cur_window->mouseButtons[GLFW_MOUSE_BUTTON_LEFT] == GLFW_RELEASE)
             _glfwInputMouseClick(_glfw.vita.cur_window, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
