@@ -1,11 +1,12 @@
 # GLFW VITA
+### GLFW3 for the Pigs in a Blanket Piglet Library
 
 [![Build status](https://travis-ci.org/glfw/glfw.svg?branch=master)](https://travis-ci.org/glfw/glfw)
 [![Build status](https://ci.appveyor.com/api/projects/status/0kf0ct9831i5l6sp/branch/master?svg=true)](https://ci.appveyor.com/project/elmindreda/glfw)
 [![Coverity Scan](https://scan.coverity.com/projects/4884/badge.svg)](https://scan.coverity.com/projects/glfw-glfw)
 
 ## Compiling and Installing GLFW VITA
-Install [DolceSDK](https://github.com/DolceSDK/doc) and run this command in the root directory
+Install [DolceSDK](https://github.com/DolceSDK/doc) (VitaSDK not tested as of yet), then install [Pigs in a Blanket](https://github.com/SonicMastr/Pigs-In-A-Blanket) and run this command in the root directory
 ```
 ./build_vita.sh
 ```
