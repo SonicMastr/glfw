@@ -71,6 +71,7 @@ typedef struct _GLFWwindowVita
 {
     int nwin;
     int width, height;
+    double cursorPosX, cursorPosY, lastCursorPosX, lastCursorPosY;
 } _GLFWwindowVita;
 
 // Vita-specific global data

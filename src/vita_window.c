@@ -326,10 +326,14 @@ void _glfwPlatformPostEmptyEvent(void)
 
 void _glfwPlatformGetCursorPos(_GLFWwindow* window, double* xpos, double* ypos)
 {
+    *xpos = _glfw.vita.cur_window->virtualCursorPosX;
+    *ypos = _glfw.vita.cur_window->virtualCursorPosY;
 }
 
 void _glfwPlatformSetCursorPos(_GLFWwindow* window, double x, double y)
 {
+    _glfw.vita.cur_window->virtualCursorPosX = x;
+    _glfw.vita.cur_window->virtualCursorPosY = y;
 }
 
 void _glfwPlatformSetCursorMode(_GLFWwindow* window, int mode)
