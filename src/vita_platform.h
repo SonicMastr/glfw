@@ -25,8 +25,8 @@
 //
 //========================================================================
 
-#include <psp2/types.h>
-#include <psp2/rtc.h>
+#include <scetypes.h>
+#include <rtc.h>
 #include <pib.h>
 
 // Internally rename GLFW OpenGL context management functions

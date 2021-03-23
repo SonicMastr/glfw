@@ -24,8 +24,8 @@
 //
 //========================================================================
 
-#include <psp2/ctrl.h>
-#include <psp2/touch.h>
+#include <ctrl.h>
+#include <touch.h>
 
 #define _GLFW_PLATFORM_JOYSTICK_STATE         _GLFWjoystickVita vita
 #define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE

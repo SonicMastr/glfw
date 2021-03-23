@@ -57,7 +57,7 @@ float forcerange;
 
 static const unsigned int button_map[] = {
     SCE_CTRL_CROSS, SCE_CTRL_CIRCLE, SCE_CTRL_SQUARE, SCE_CTRL_TRIANGLE, 
-    SCE_CTRL_LTRIGGER, SCE_CTRL_RTRIGGER,
+    SCE_CTRL_L, SCE_CTRL_R,
     SCE_CTRL_SELECT, SCE_CTRL_START};
 
 enum  	HidKeyboardScancode {
@@ -342,7 +342,7 @@ void _glfwInitVitaJoysticks(void)
 
     js->mapping = &s_vitaMapping;
     js->vita.id = 0;
-    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+    sceCtrlSetSamplingMode(SCE_CTRL_MODE_DIGITALANALOG_WIDE);
     for (int i = 0; i < 128; i++)
     {
         float t = (float)i/127.0f;

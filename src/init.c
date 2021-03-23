@@ -232,6 +232,8 @@ GLFWAPI int glfwInit(void)
     memset(&_glfw, 0, sizeof(_glfw));
     _glfw.hints.init = _glfwInitHints;
 
+    storeThread();
+
     if (!_glfwPlatformInit())
     {
         terminate();
@@ -248,25 +250,18 @@ GLFWAPI int glfwInit(void)
 
     _glfwPlatformSetTls(&_glfw.errorSlot, &_glfwMainThreadError);
 
+    printf("Why are we still here?\n");
+
     _glfw.initialized = GLFW_TRUE;
     _glfw.timer.offset = _glfwPlatformGetTimerValue();
 
+    printf("Just to suffer?\n");
+
     glfwDefaultWindowHints();
 
-#if !defined(_GLFW_SWITCH) || !defined(_GLFW_VITA)
-    {
-        int i;
+    printf("Every night...\n");
 
-        for (i = 0;  _glfwDefaultMappings[i];  i++)
-        {
-            if (!glfwUpdateGamepadMappings(_glfwDefaultMappings[i]))
-            {
-                terminate();
-                return GLFW_FALSE;
-            }
-        }
-    }
-#endif
+    printf("I can feel my leg... and my arm...\n");
 
     return GLFW_TRUE;
 }

@@ -31,7 +31,42 @@
 
 #include <assert.h>
 #include <string.h>
+#include <kernel.h>
 
+typedef struct
+{
+  int count;
+  pthread_mutex_t mutex;
+  void (*dtor)(void*);  
+} pthread_key;
+
+#define PTHREAD_MUTEX_INITIALIZER_ { STATIC_INIT_ID_, (pthread_t)MUTEX_SIG_, 0, 0, (char)PTHREAD_MUTEX_NORMAL,     0, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} }
+
+static pthread_key key_table[PTHREAD_KEYS_MAX];
+static pthread_mutex_t key_mutex;
+static pthread_storage_t UserMainThreadStorage;
+static pthread_t UserMainThread = NULL;
+
+void storeThread()
+{
+    UserMainThread = &UserMainThreadStorage;
+    UserMainThread->id = sceKernelGetThreadId();
+	key_mutex.id = sceKernelCreateMutex("GLFW TLS", SCE_KERNEL_MUTEX_ATTR_TH_FIFO, 1, NULL);
+	printf("Stored Thread\n");
+}
+
+pthread_t getSelf(void)
+{
+  	SceUID id;
+
+  	id = sceKernelGetThreadId();
+  	if (id <= 0)
+    	return NULL;
+  	if (UserMainThread != NULL && UserMainThread->id == id)
+    	return UserMainThread;
+
+    return NULL;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //////                       GLFW platform API                      //////
@@ -41,65 +76,148 @@ GLFWbool _glfwPlatformCreateTls(_GLFWtls* tls)
 {
     assert(tls->posix.allocated == GLFW_FALSE);
 
-    if (pthread_key_create(&tls->posix.key, NULL) != 0)
-    {
-        _glfwInputError(GLFW_PLATFORM_ERROR,
+    int kix;
+    int res;
+    sceKernelLockMutex(key_mutex.id, 1, NULL);
+	printf("Locked TLS Mutex\n");
+    for (kix = 0; kix < PTHREAD_KEYS_MAX; kix++) 
+        if (key_table[kix].count == 0) 
+        {
+            key_table[kix].count++;
+            key_table[kix].dtor = NULL;
+            key_table[kix].mutex.id = sceKernelCreateMutex("GLFW KEY", SCE_KERNEL_MUTEX_ATTR_TH_FIFO, 1, NULL);
+            tls->posix.key.key = kix;
+            res = 0;
+            tls->posix.allocated = GLFW_TRUE;
+            sceKernelUnlockMutex(key_mutex.id, 1);
+			printf("Unlocked TLS Mutex\n");
+            return GLFW_TRUE;
+        }
+    sceKernelUnlockMutex(key_mutex.id, 1);
+	printf("Unlocked TLS Mutex But Error\n");
+    _glfwInputError(GLFW_PLATFORM_ERROR,
                         "POSIX: Failed to create context TLS");
-        return GLFW_FALSE;
-    }
-
-    tls->posix.allocated = GLFW_TRUE;
-    return GLFW_TRUE;
+    return GLFW_FALSE;
 }
 
 void _glfwPlatformDestroyTls(_GLFWtls* tls)
 {
-    if (tls->posix.allocated)
-        pthread_key_delete(tls->posix.key);
+    if (tls->posix.allocated) {
+        int k = tls->posix.key.key;
+        int c;
+
+        if (k < 0 || k >= PTHREAD_KEYS_MAX) 
+            goto einval;
+
+        sceKernelLockMutex(key_table[k].mutex.id, 1, NULL);
+        if ((c = key_table[k].count) == 0)
+            goto exit;
+        
+        if (c == 1) {
+            // The key is there but there is no thread specific 
+            // data associated to it.  We can safely delete
+            key_table[k].dtor = NULL;
+            key_table[k].count = 0;
+            goto exit;
+        }
+exit:
+        sceKernelDeleteMutex(key_table[k].mutex.id);
+    }
+einval:
     memset(tls, 0, sizeof(_GLFWtls));
 }
 
 void* _glfwPlatformGetTls(_GLFWtls* tls)
 {
     assert(tls->posix.allocated == GLFW_TRUE);
-    return pthread_getspecific(tls->posix.key);
+	void *ret;
+	pthread_t me = getSelf();
+	int k = tls->posix.key.key;
+
+	if (me->specific_data == NULL ||
+		k < 0 || k >= PTHREAD_KEYS_MAX)
+		return NULL;
+
+	if (key_table[k].count) {
+		ret = (void *)me->specific_data[k];
+	} 
+	else {
+		ret = NULL;
+	}
+
+	return(ret);
 }
 
 void _glfwPlatformSetTls(_GLFWtls* tls, void* value)
 {
     assert(tls->posix.allocated == GLFW_TRUE);
-    pthread_setspecific(tls->posix.key, value);
+	pthread_t me = getSelf();
+	printf("Got Self: 0x%08X\n", me);
+	int k = tls->posix.key.key;
+
+	if (k < 0 || k >= PTHREAD_KEYS_MAX)
+		return EINVAL;
+
+	sceKernelLockMutex(key_table[k].mutex.id, 1, NULL);
+	printf("Locked Set TLS Mutex\n");
+	if (key_table[k].count == 0)
+		goto exit;
+
+	if (me->specific_data[k] == NULL) 
+		{
+		if (value != NULL) 
+			{
+			me->specific_data_count++;
+			key_table[k].count++;
+			}
+		} 
+	else 
+		{
+		if (value == NULL) 
+			{
+			me->specific_data_count--;
+			key_table[k].count--;
+			}
+		}
+	me->specific_data[k] = value;
+exit:
+  	sceKernelUnlockMutex(key_table[k].mutex.id, 1);
+	printf("Unlocked Set TLS Mutex\n");
 }
 
 GLFWbool _glfwPlatformCreateMutex(_GLFWmutex* mutex)
 {
     assert(mutex->posix.allocated == GLFW_FALSE);
 
-    if (pthread_mutex_init(&mutex->posix.handle, NULL) != 0)
-    {
+    mutex->posix.handle.id = sceKernelCreateMutex("GLFW Mutex", SCE_KERNEL_MUTEX_ATTR_TH_FIFO, 1, NULL);
+    if (mutex->posix.handle.id <= 0) {
         _glfwInputError(GLFW_PLATFORM_ERROR, "POSIX: Failed to create mutex");
         return GLFW_FALSE;
     }
+    else {
+        return mutex->posix.allocated = GLFW_TRUE;
+    }
 
-    return mutex->posix.allocated = GLFW_TRUE;
 }
 
 void _glfwPlatformDestroyMutex(_GLFWmutex* mutex)
 {
-    if (mutex->posix.allocated)
-        pthread_mutex_destroy(&mutex->posix.handle);
+    if (mutex->posix.allocated) {
+        sceKernelDeleteMutex(mutex->posix.handle.id);
+
+    }
     memset(mutex, 0, sizeof(_GLFWmutex));
 }
 
 void _glfwPlatformLockMutex(_GLFWmutex* mutex)
 {
     assert(mutex->posix.allocated == GLFW_TRUE);
-    pthread_mutex_lock(&mutex->posix.handle);
+    sceKernelLockMutex(mutex->posix.handle.id, 1, NULL);
 }
 
 void _glfwPlatformUnlockMutex(_GLFWmutex* mutex)
 {
     assert(mutex->posix.allocated == GLFW_TRUE);
-    pthread_mutex_unlock(&mutex->posix.handle);
+    sceKernelUnlockMutex(mutex->posix.handle.id, 1);
 }
 

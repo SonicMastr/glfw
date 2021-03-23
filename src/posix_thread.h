@@ -25,7 +25,8 @@
 //
 //========================================================================
 
-#include <pthread.h>
+#include <pthread/pthread_vita.h>
+#include <pthread/pthread_impl.h>
 
 #define _GLFW_PLATFORM_TLS_STATE    _GLFWtlsPOSIX   posix
 #define _GLFW_PLATFORM_MUTEX_STATE  _GLFWmutexPOSIX posix

@@ -180,23 +180,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
   #define vkGetInstanceProcAddr _glfw.vk.GetInstanceProcAddr
 #endif
 
-#if defined(_GLFW_COCOA)
- #include "cocoa_platform.h"
-#elif defined(_GLFW_WIN32)
- #include "win32_platform.h"
-#elif defined(_GLFW_X11)
- #include "x11_platform.h"
-#elif defined(_GLFW_WAYLAND)
- #include "wl_platform.h"
-#elif defined(_GLFW_OSMESA)
- #include "null_platform.h"
-#elif defined(_GLFW_SWITCH)
- #include "switch_platform.h"
-#elif defined(_GLFW_VITA)
- #include "vita_platform.h"
-#else
- #error "No supported window creation API selected"
-#endif
+#include "vita_platform.h"
+void storeThread(void);
 
 // Constructs a version number string from the public header macros
 #define _GLFW_CONCAT_VERSION(m, n, r) #m "." #n "." #r
