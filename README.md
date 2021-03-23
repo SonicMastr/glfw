@@ -4,10 +4,13 @@
 [![time tracker](https://wakatime.com/badge/github/SonicMastr/glfw-vita.svg)](https://wakatime.com/badge/github/SonicMastr/glfw-vita)
 
 ## Compiling and Installing GLFW VITA
-Install [VDSuite](https://github.com/Vita-Development-Suite/doc) (VitaSDK not tested as of yet), then install [Pigs in a Blanket](https://github.com/SonicMastr/Pigs-In-A-Blanket) and run this command in the root directory
-```
-./build_vita.sh
-```
+- Install [VDSuite](https://github.com/Vita-Development-Suite/doc) (VitaSDK not tested as of yet), then install [Pigs in a Blanket](https://github.com/SonicMastr/Pigs-In-A-Blanket)
+
+### Note: Visual Studio 2017 usage requires the installation of the SCESDK VSI2017 Plugin.
+- Run `cmake -Bbuild` with a generator of your choice (`-G "Visual Studio 15" -T SNC -A PSVita` for VS2017 or `-G "Ninja"` for Ninja).
+
+- For VS2017, open `glfw3.sln` in your build directory and build the `INSTALL` project.
+- For Ninja, cd into the build directory and run `ninja install`.
 
 ## Introduction
 
