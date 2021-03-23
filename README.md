@@ -9,7 +9,7 @@
 ### Note: Visual Studio 2017 usage requires the installation of the SCESDK VSI2017 Plugin.
 - Run `cmake -Bbuild` with a generator of your choice (`-G "Visual Studio 15" -T SNC -A PSVita` for VS2017 or `-G "Ninja"` for Ninja).
 
-- For VS2017, open `glfw3.sln` in your build directory and build the `INSTALL` project.
+- For VS2017, open `glfw3.sln` in your build directory and build the `INSTALL` project. (Make sure your Configuration is for Release)
 - For Ninja, cd into the build directory and run `ninja install`.
 
 ## Introduction
