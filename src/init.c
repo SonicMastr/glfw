@@ -250,18 +250,10 @@ GLFWAPI int glfwInit(void)
 
     _glfwPlatformSetTls(&_glfw.errorSlot, &_glfwMainThreadError);
 
-    printf("Why are we still here?\n");
-
     _glfw.initialized = GLFW_TRUE;
     _glfw.timer.offset = _glfwPlatformGetTimerValue();
 
-    printf("Just to suffer?\n");
-
     glfwDefaultWindowHints();
-
-    printf("Every night...\n");
-
-    printf("I can feel my leg... and my arm...\n");
 
     return GLFW_TRUE;
 }

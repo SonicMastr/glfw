@@ -52,7 +52,6 @@ void storeThread()
     UserMainThread = &UserMainThreadStorage;
     UserMainThread->id = sceKernelGetThreadId();
 	key_mutex.id = sceKernelCreateMutex("GLFW TLS", SCE_KERNEL_MUTEX_ATTR_TH_FIFO, 1, NULL);
-	printf("Stored Thread\n");
 }
 
 pthread_t getSelf(void)
@@ -79,7 +78,6 @@ GLFWbool _glfwPlatformCreateTls(_GLFWtls* tls)
     int kix;
     int res;
     sceKernelLockMutex(key_mutex.id, 1, NULL);
-	printf("Locked TLS Mutex\n");
     for (kix = 0; kix < PTHREAD_KEYS_MAX; kix++) 
         if (key_table[kix].count == 0) 
         {
@@ -90,11 +88,9 @@ GLFWbool _glfwPlatformCreateTls(_GLFWtls* tls)
             res = 0;
             tls->posix.allocated = GLFW_TRUE;
             sceKernelUnlockMutex(key_mutex.id, 1);
-			printf("Unlocked TLS Mutex\n");
             return GLFW_TRUE;
         }
     sceKernelUnlockMutex(key_mutex.id, 1);
-	printf("Unlocked TLS Mutex But Error\n");
     _glfwInputError(GLFW_PLATFORM_ERROR,
                         "POSIX: Failed to create context TLS");
     return GLFW_FALSE;
@@ -152,14 +148,12 @@ void _glfwPlatformSetTls(_GLFWtls* tls, void* value)
 {
     assert(tls->posix.allocated == GLFW_TRUE);
 	pthread_t me = getSelf();
-	printf("Got Self: 0x%08X\n", me);
 	int k = tls->posix.key.key;
 
 	if (k < 0 || k >= PTHREAD_KEYS_MAX)
 		return EINVAL;
 
 	sceKernelLockMutex(key_table[k].mutex.id, 1, NULL);
-	printf("Locked Set TLS Mutex\n");
 	if (key_table[k].count == 0)
 		goto exit;
 
@@ -182,7 +176,6 @@ void _glfwPlatformSetTls(_GLFWtls* tls, void* value)
 	me->specific_data[k] = value;
 exit:
   	sceKernelUnlockMutex(key_table[k].mutex.id, 1);
-	printf("Unlocked Set TLS Mutex\n");
 }
 
 GLFWbool _glfwPlatformCreateMutex(_GLFWmutex* mutex)
