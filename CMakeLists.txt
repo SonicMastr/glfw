@@ -8,7 +8,7 @@ include(VitaDevelopmentSuite)
 set(CMAKE_C_STANDARD 99)
 
 add_compile_options(
-  -Xdiag=0 -Xquit=2 -O3 -v
+  -Xdiag=0 -Xquit=2 -O3
 )
 
 add_link_options(
